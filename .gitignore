@@ -1,0 +1,13 @@
+# Python / venv
+venv/
+__pycache__/
+*.pyc
+
+# Local data/artifacts
+netstats.db
+*.png
+*.csv
+
+# Editor
+.vscode/
+.idea/
