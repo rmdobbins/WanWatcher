@@ -27,13 +27,14 @@ Key options:
 - Throughput: `--iperf ...` (TCP, up/down/bidir), or `--http-url ...` for download-only. Control cadence with `--throughput-every N` (0 disables throughput).
 - `--keep-days`: prune rows older than N days to limit DB size.
 
-## Viewing metrics
-Render charts or export CSV with `net_view.py`:
+## Viewing metrics (matplotlib)
+Render charts or export CSV with `net_view.py` (matplotlib UI supports pan/zoom):
 ```powershell
-python net_view.py --db netstats.db --iface TOTAL --minutes 1440 --out net_view.png --export-csv net_view.csv
+python net_view.py --db netstats.db --iface TOTAL --minutes 1440 --rate-clip 99.5 --rate-scale linear --out net_view.png --export-csv net_view.csv
 ```
 Highlights:
 - Byte/packet rates.
+- Adjustable rate scaling: `--rate-clip` percentile caps Y-axis for spikes; `--rate-scale` can be `linear` or `log`.
 - Latency band (ping min/max + avg), jitter, DNS, and shaded regions where `avail_ok` is false.
 - Throughput up/down with jitter/loss overlays and method markers (iperf/http).
 - Error/drop rates using stored deltas.

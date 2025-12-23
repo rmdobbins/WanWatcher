@@ -78,10 +78,30 @@ def _availability_shading(ax, df):
     ax.set_ylim(ymin, ymax)
 
 
-def plot_byte_rates(df, iface, host, minutes, out_path):
+def _apply_scale(ax, series_list, scale_type, clip_pct):
+    combined = pd.concat(series_list).dropna()
+    if combined.empty:
+        return
+    if scale_type == "log":
+        combined = combined[combined > 0]
+    if combined.empty:
+        return
+    upper = combined.quantile(clip_pct / 100.0) if clip_pct and clip_pct < 100 else combined.max()
+    if not pd.notna(upper) or upper <= 0:
+        return
+    if scale_type == "log":
+        lower = max(combined.min() * 0.8, 0.1)
+        ax.set_yscale("log")
+        ax.set_ylim(lower, upper * 1.1)
+    else:
+        ax.set_ylim(0, upper * 1.1)
+
+
+def plot_byte_rates(df, iface, host, minutes, out_path, scale_type, clip_pct):
     plt.figure(figsize=(10, 4.5))
     plt.plot(df["ts"], df["bytes_sent_rate"], label="Up (bytes/s)")
     plt.plot(df["ts"], df["bytes_recv_rate"], label="Down (bytes/s)")
+    _apply_scale(plt.gca(), [df["bytes_sent_rate"], df["bytes_recv_rate"]], scale_type, clip_pct)
     plt.title(f"Byte Rates | iface={iface} host={host or 'any'} | last {minutes} min")
     plt.xlabel("Time (UTC)")
     plt.ylabel("Bytes per second")
@@ -90,10 +110,11 @@ def plot_byte_rates(df, iface, host, minutes, out_path):
     maybe_save_or_show(out_path)
 
 
-def plot_packet_rates(df, iface, host, minutes, out_path):
+def plot_packet_rates(df, iface, host, minutes, out_path, scale_type, clip_pct):
     plt.figure(figsize=(10, 4.5))
     plt.plot(df["ts"], df["packets_sent_rate"], label="Packets up (pkts/s)")
     plt.plot(df["ts"], df["packets_recv_rate"], label="Packets down (pkts/s)")
+    _apply_scale(plt.gca(), [df["packets_sent_rate"], df["packets_recv_rate"]], scale_type, clip_pct)
     plt.title(f"Packet Rates | iface={iface} host={host or 'any'} | last {minutes} min")
     plt.xlabel("Time (UTC)")
     plt.ylabel("Packets per second")
@@ -207,6 +228,7 @@ def plot_errors(df, iface, host, minutes, out_path):
         plt.plot(df["ts"], df["dropin_rate"], label="dropin (/s)")
     if "dropout_rate" in df.columns:
         plt.plot(df["ts"], df["dropout_rate"], label="dropout (/s)")
+    _apply_scale(plt.gca(), [df[c] for c in rate_cols if c in df.columns], "linear", 99.5)
     plt.title(f"Error/Drop Rates | iface={iface} host={host or 'any'} | last {minutes} min")
     plt.xlabel("Time (UTC)")
     plt.ylabel("Events per second")
@@ -223,6 +245,8 @@ def main():
     ap.add_argument("--minutes", type=int, default=240, help="How many minutes back to show")
     ap.add_argument("--out", default="", help="Optional base filename to save figures (adds suffixes)")
     ap.add_argument("--export-csv", default="", help="Optional CSV path to export the windowed data")
+    ap.add_argument("--rate-scale", choices=["linear", "log"], default="linear", help="Scale for byte/packet rate charts")
+    ap.add_argument("--rate-clip", type=float, default=99.5, help="Percentile to cap rate Y-axis (e.g., 99, 99.5, 100 for none)")
     args = ap.parse_args()
 
     df = load_data(args.db, args.iface, args.minutes, host=args.host or None)
@@ -242,8 +266,8 @@ def main():
             return base.replace(".png", f"_{kind}.png")
         return f"{base}_{kind}.png"
 
-    plot_byte_rates(df, args.iface, args.host or "any", args.minutes, out_path("rates"))
-    plot_packet_rates(df, args.iface, args.host or "any", args.minutes, out_path("packets"))
+    plot_byte_rates(df, args.iface, args.host or "any", args.minutes, out_path("rates"), args.rate_scale, args.rate_clip)
+    plot_packet_rates(df, args.iface, args.host or "any", args.minutes, out_path("packets"), args.rate_scale, args.rate_clip)
     plot_latency(df, args.iface, args.host or "any", args.minutes, out_path("latency"))
     plot_throughput(df, args.iface, args.host or "any", args.minutes, out_path("throughput"))
     plot_errors(df, args.iface, args.host or "any", args.minutes, out_path("errors"))
