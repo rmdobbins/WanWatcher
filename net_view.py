@@ -266,11 +266,11 @@ def main():
             return base.replace(".png", f"_{kind}.png")
         return f"{base}_{kind}.png"
 
-    plot_byte_rates(df, args.iface, args.host or "any", args.minutes, out_path("rates"), args.rate_scale, args.rate_clip)
-    plot_packet_rates(df, args.iface, args.host or "any", args.minutes, out_path("packets"), args.rate_scale, args.rate_clip)
+    # plot_byte_rates(df, args.iface, args.host or "any", args.minutes, out_path("rates"), args.rate_scale, args.rate_clip)
+    # plot_packet_rates(df, args.iface, args.host or "any", args.minutes, out_path("packets"), args.rate_scale, args.rate_clip)
     plot_latency(df, args.iface, args.host or "any", args.minutes, out_path("latency"))
-    plot_throughput(df, args.iface, args.host or "any", args.minutes, out_path("throughput"))
-    plot_errors(df, args.iface, args.host or "any", args.minutes, out_path("errors"))
+    # plot_throughput(df, args.iface, args.host or "any", args.minutes, out_path("throughput"))
+    # plot_errors(df, args.iface, args.host or "any", args.minutes, out_path("errors"))
 
 
 if __name__ == "__main__":
