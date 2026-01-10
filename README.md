@@ -27,6 +27,26 @@ Key options:
 - Throughput: `--iperf ...` (TCP, up/down/bidir), or `--http-url ...` for download-only. Control cadence with `--throughput-every N` (0 disables throughput).
 - `--keep-days`: prune rows older than N days to limit DB size.
 
+## Traceroute logging
+Run `net_traceroute_logger.py` to record traceroute hops to the same SQLite DB:
+```powershell
+python net_traceroute_logger.py --db netstats.db --target 8.8.8.8 --interval 300 --max-hops 30 --timeout-ms 2000
+```
+Key options:
+- `--interval`: seconds between traceroute runs.
+- `--target`: host/IP to trace.
+- `--no-dns`: skip DNS lookups for faster, numeric-only hops.
+- `--keep-days`: prune traceroute rows older than N days.
+
+## Traceroute viewing
+Analyze traceroute history and plot hop RTTs:
+```powershell
+python net_trace_view.py --db netstats.db --target 8.8.8.8 --since-hours 24 --runs 50
+```
+Notes:
+- Saves two charts when `--out` is provided (last run + hop stats) and always shows the graphs.
+- Use `--export-csv` to dump joined run/hop rows.
+
 ## Viewing metrics (matplotlib)
 Render charts or export CSV with `net_view.py` (matplotlib UI supports pan/zoom):
 ```powershell
