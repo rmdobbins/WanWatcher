@@ -376,13 +376,14 @@ def main():
     title = f"Traceroute hop stats | target={target} host={args.host or 'any'}"
     plots_made += int(plot_hop_stats(df, title, out_path("stats")))
 
-    for key, rid in sorted(route_id_map.items(), key=lambda kv: kv[1]):
-        run_ids = runs_sorted.loc[runs_sorted["route_id"] == rid, "id"].tolist()
-        route_df = df[df["run_id"].isin(run_ids)]
-        if route_df.empty:
-            continue
-        title = f"Route {rid} hop stats | target={target} host={args.host or 'any'} runs={len(run_ids)}"
-        plots_made += int(plot_hop_stats(route_df, title, out_path(f"route{rid}")))
+    if len(route_id_map) > 1:
+        for key, rid in sorted(route_id_map.items(), key=lambda kv: kv[1]):
+            run_ids = runs_sorted.loc[runs_sorted["route_id"] == rid, "id"].tolist()
+            route_df = df[df["run_id"].isin(run_ids)]
+            if route_df.empty:
+                continue
+            title = f"Route {rid} hop stats | target={target} host={args.host or 'any'} runs={len(run_ids)}"
+            plots_made += int(plot_hop_stats(route_df, title, out_path(f"route{rid}")))
 
     if plots_made:
         plt.show()
