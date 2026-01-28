@@ -60,6 +60,13 @@ Highlights:
 - Error/drop rates using stored deltas.
 - Filter by host with `--host <label>`.
 
+## Web report server
+Serve a lightweight HTML report (summary tables + charts) from the SQLite DB:
+```powershell
+python net_report_server.py --db netstats.db --port 8000
+```
+Open http://127.0.0.1:8000/ in a browser. Use the "Filters and thresholds" panel to adjust the window, target, and thresholds.
+
 ## Notes
 - Schema evolves automatically; new columns are added on startup.
 - iperf3 tests consume bandwidth—adjust `--throughput-every` to reduce load.
